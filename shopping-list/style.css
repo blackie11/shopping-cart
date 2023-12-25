@@ -59,7 +59,7 @@ header h1 {
 
 /* Buttons */
 .btn {
-  background-color: #333;
+  background-color: hwb(0, 20%, 80%, 0.3)
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -124,6 +124,14 @@ img {
   margin: 0 5px 20px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.edit-mode{
+  color: #444;
+  font-style: italic;
+  font-size: .9rem;
+  font-weight: 300;
+  
 }
 
 @media (max-width: 500px) {

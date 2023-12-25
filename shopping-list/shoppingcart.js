@@ -1,195 +1,182 @@
-// console.dir(window.document);
-
-// const secondItem = document.querySelector("li:nth-Child(2)");
-// secondItem.style.color = "green";
-
-// // changing the background of the document ui
-
-// const changeBackground = document.querySelector("body");
-// changeBackground.style.backgroundColor = "lightblue";
-// console.log(secondItem);
-
-// // function to create new item and add to the list
-// function createNewItem(item) {
-//   const li = document.createElement("li");
-//   li.appendChild(document.createTextNode(item));
-//   const button = createButton("remove-item btn-link text-red");
-
-//   // append the button into the list item
-//   li.appendChild(button);
-//   return document.querySelector(".items").appendChild(li);
-// }
-
-// // function to create button with embedded icon
-// function createButton(classes) {
-//   const button = document.createElement("button");
-//   button.className = classes;
-
-//   const icon = createIcon("fa-solid fa-xmark");
-//   button.appendChild(icon);
-//   return button;
-// }
-
-// //  function to create the icon
-// function createIcon(classes) {
-//   const icon = document.createElement("i");
-//   icon.className = classes;
-//   return icon;
-// }
-
-// createNewItem("chesse");
-// createNewItem("Eggs");
-
-// function insertAfter(newEl, existingEl) {
-//   existingEl.parentElement.insertBefore(newEl, existingEl.nextSibling);
-
-//   return;
-// }
-
-// const li = document.createElement("li");
-// li.textContent = "orange juice is the best";
-
-// const firstItem = document.querySelector("li:nth-child(3)");
-
-// insertAfter(li, firstItem);
-
-// const clearBtn = document.querySelector(".btn-clear");
-// const items = document.querySelectorAll("li");
-
-// function clearItems() {
-//   clearBtn.onClick = items.remove;
-// }
-
-// const clearBtn = document.querySelector("#clear");
-// const items = document.querySelectorAll(".items");
-// clearBtn.addEventListener("click", () => {
-//   // Loop through each item and remove it
-//   items.forEach((item) => {
-//     item.remove();
-//   });
-
-//   console.log(items);
-
-//   return;
-// });
-
-// to remove eventlistner we use the following method
-// addEventListener
-
-// const clearBtn = document.querySelector("#clear");
-// const items = document.querySelectorAll(".items");
-
-// // Define the function to handle the click event
-// const handleClearButtonClick = () => {
-//   // Loop through each item and remove it
-//   items.forEach((item) => {
-//     item.remove();
-//   });
-
-//   console.log(items);
-// };
-
-// // Add the event listener
-// clearBtn.addEventListener("click", handleClearButtonClick);
-
-// // Remove the event listener after 5000 milliseconds (5 seconds)
-// setTimeout(() => {
-//   clearBtn.removeEventListener("click", handleClearButtonClick);
-// }, 10000);
-
-// const logo = document.querySelector("img");
-
-// const onClick = () => {
-//   const backgroundChange = document.body.style.backgroundColor;
-//   const container = document.querySelector(".container"); // Fix typo in the class name
-
-//   if (backgroundChange === "white") {
-//     document.body.style.backgroundColor = "skyblue"; // Change background color directly on body
-//     container.style.backgroundColor = "purple";
-//   } else {
-//     document.body.style.backgroundColor = "green"; // Change background color directly on body
-//     container.style.backgroundColor = "green";
-//   }
-// };
-
-// // Example: Add the click event listener to a button
-// // const button = document.querySelector("#myButton"); // Replace with your button ID
-// // button.addEventListener("click", onClick);
-
-// const onDoubleClick = () => {
-//   document.body.style.backgroundColor = "greenyellow";
-// };
-
-// logo.addEventListener("dblclick", onDoubleClick);
-// logo.addEventListener("click", onClick);
-
-// const logo = document.querySelector("img");
-
-// const onMouseDown = () => {
-//   console.log("greatest greatest");
-// };
-
-// document.addEventListener("mousedown", onMouseDown);
-
-// function onClick(e) {
-//   console.log(e.target);
-//   console.log(e.currentTarget);
-// }
-
-// logo.addEventListener("click", onClick);
-
-// function onDrag(e) {
-//   document.querySelector("h1").textContent = `X ${e.clientX} Y${e.clientY}`;
-// }
-
-// logo.addEventListener("drag", onDrag);
-
-// const itemInput = document.getElementById("item-input");
-
-// const onKeyPress = (e) => {
-//   console.log("greatest");
-// };
-
-// itemInput.addEventListener("keypress", onKeyPress);
-
 // DECLARE YOUR VARIABLES IN THE GLOBAL SCOPE
 const itemForm = document.getElementById("item-form");
 const itemInput = document.getElementById("item-input");
 const itemList = document.getElementById("item-list");
+const clearBtn = document.getElementById("clear");
+const itemFliter = document.getElementById("filter");
+const formBtn = itemForm.querySelector("button");
+let isEditMode = false;
 
-function addItem(e) {
-  e.preventDefault();
-
-  const newItem = itemInput.value;
-
-  if (newItem === " ") {
-    alert("input an item");
-    return;
-  }
-
-  const li = document.createElement("li");
-  li.appendChild(document.createTextNode(newItem));
-  const button = createBtn("remove-item btn-link text-red");
-  li.appendChild(button);
-
-  itemList.append(li);
-  itemInput.value = " ";
+function displayItems() {
+    const itemsFromStorage = getItemsFromStorage();
+    itemsFromStorage.forEach((item) => addItemToDOM(item));
+    checkUI();
 }
 
+function onAddItemSubmit(e) {
+    e.preventDefault();
+    const newItem = itemInput.value;
+    if (newItem === "") {
+        alert("input an item");
+        return;
+    }
+
+    if (isEditMode) {
+        const itemToEdit = itemList.querySelector(".edit-mode");
+        removeItemFromStorage(itemToEdit.textContent);
+        itemToEdit.remove();
+        isEditMode = false;
+    } else {
+        if (checkIfItemExist(newItem)) {
+            alert("that item already exists !");
+        }
+    }
+    addItemToDOM(newItem);
+    addItemToStorage(newItem);
+    checkUI();
+    itemInput.value = " ";
+}
+
+function addItemToDOM(item) {
+    // create list item
+    const li = document.createElement("li");
+    li.appendChild(document.createTextNode(item));
+    const button = createBtn("remove-item btn-link text-red");
+    li.appendChild(button);
+    itemList.append(li);
+}
+// create new button
 function createBtn(classes) {
-  const button = document.createElement("button");
-  button.className = classes;
+    const button = document.createElement("button");
+    button.className = classes;
 
-  const icon = createIcon("fa-solid fa-xmark");
-  button.appendChild(icon);
-  return button;
+    const icon = createIcon("fa-solid fa-xmark");
+    button.appendChild(icon);
+    return button;
 }
-
+// create new icon
 function createIcon(classes) {
-  const icon = document.createElement("i");
-  icon.className = classes;
-  return icon;
+    const icon = document.createElement("i");
+    icon.className = classes;
+    return icon;
 }
 
-//  event listeners
-itemForm.addEventListener("submit", addItem);
+function onClickItem(e) {
+    if (e.target.parentElement.classList.contains("remove-item")) {
+        removeItem(e.target.parentElement.parentElement);
+    } else {
+        setItemToEdit(e.target);
+    }
+}
+
+function setItemToEdit(item) {
+    isEditMode = true;
+    itemList
+        .querySelectorAll("li")
+        .forEach((i) => i.classList.remove("edit-mode"));
+
+    item.classList.add("edit-mode");
+    formBtn.innerHTML = '<i class="fa=solid fa-pen" ></i>  update item';
+    formBtn.style.backgroundColor = "green";
+    itemInput.value = item.textContent;
+}
+
+// remove item from the item list
+function removeItem(item) {
+    if (confirm("Are you  sure?")) {
+        item.remove();
+        removeItemFromStorage(item.textContent);
+
+        checkUI();
+    }
+}
+
+// function removeItemFromStorage(item) {
+//     const itemsFromStorage = getItemsFromStorage();
+//     itemsFromStorage = itemsFromStorage.filter((i)  => i !== item);
+// }
+
+function addItemToStorage(items) {
+    const itemsFromStorage = getItemsFromStorage();
+    itemsFromStorage.push(items);
+    // convert to JSON string and set to local storage
+    localStorage.setItem("items", JSON.stringify(itemsFromStorage));
+}
+
+function getItemsFromStorage() {
+    let itemsFromStorage;
+    let storedItems = localStorage.getItem("items");
+
+    if (storedItems === null) {
+        itemsFromStorage = [];
+    } else {
+        itemsFromStorage = JSON.parse(localStorage.getItem("items"));
+    }
+    return itemsFromStorage;
+    // console.log(itemsFromStorage);
+}
+
+function removeItemFromStorage(item) {
+    let itemsFromStorage = getItemsFromStorage(); // Corrected typo
+    // filter out item to be removed
+    itemsFromStorage = itemsFromStorage.filter((i) => i !== item);
+    localStorage.setItem("items", JSON.stringify(itemsFromStorage));
+}
+
+// function to clear items
+function clearItem() {
+    while (itemList.firstChild) {
+        itemList.removeChild(itemList.firstChild);
+    }
+
+    localStorage.removeItem("items");
+    checkUI();
+}
+// function to fliter items
+function fliterItem(e) {
+    const items = itemList.querySelectorAll("li");
+    const text = e.target.value.toLowerCase();
+
+    items.forEach((item) => {
+        const itemName = item.firstChild.textContent.toLowerCase();
+        if (itemName.indexOf(text) != -1) {
+            item.style.display = "flex";
+        } else {
+            item.style.display = "none";
+        }
+    });
+}
+
+function checkIfItemExist(item) {
+    const itemsFromStorage = getItemsFromStorage();
+    return itemsFromStorage.includes(item);
+}
+// function to clear both clear button and the fliter item button
+function checkUI() {
+    const items = itemList.querySelectorAll("li");
+    if (items.length === 0) {
+        clearBtn.style.display = "none";
+        itemFliter.style.display = "none";
+    } else {
+        clearBtn.style.display = "block";
+        itemFliter.style.display = "block";
+    }
+
+    isEditMode = false;
+    formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add  Item';
+    formBtn.style.backgroundColor = "#333";
+}
+
+// initialize application
+function init() {
+    //  event listeners
+    itemForm.addEventListener("submit", onAddItemSubmit);
+    itemList.addEventListener("click", onClickItem);
+    clearBtn.addEventListener("click", clearItem);
+    itemFliter.addEventListener("input", fliterItem);
+    document.addEventListener("DOMContentLoaded", displayItems);
+
+    // to clear button whem there is no item
+    checkUI();
+}
+init();
